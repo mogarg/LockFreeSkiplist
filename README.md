@@ -9,7 +9,6 @@ A Snapshot interface consists of a method scan() which returns a collection of v
 
 
 ```Java
-public interface Snapshot <T>{ public void update(t,v); public T[] scan[];
-}
+public interface Snapshot <T>{ public void update(t,v); public T[] scan[];}
 ```
 
