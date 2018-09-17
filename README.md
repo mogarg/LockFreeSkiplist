@@ -23,65 +23,32 @@ The update methods (add or remove) take a snapshot of the list before updating t
 We achieve this by using a set moved which stores the thread id of the thread that updated once during the takeSnapshot() execution. If the thread updates twice we can be sure that this is the last thread to update the list and we can use the snapshot of taken by this thread which is essentially stored in newPrevious.
 
 ```Java 
-public
-SkipListSnapshot <T>
-SkipListSnapshot <T>
-SkipListSnapshot <T>
-HashSet<Long> moved = new HashSet<>();
+public SkipListSnapshot < T > takeSnapshot {
+    SkipListSnapshot < T > previous = lastSnapshot;
+    SkipListSnapshot < T > first = collect();
+    HashSet < Long > moved = new HashSet < > ();
+
+    while (true) {
+        SkipListSnapshot < T > next = collect();
+        if (next.equals(first)) { // clean double -collect ,
+            lastSnapshot = next;
+            return next;
+        } else {
+            // see if a new snapshot
+            SkipListSnapshot < T > newPrevious = lastSnapshot;
+            if (previous != newPrevious) {
+                if (moved.contains(newPrevious.getThread())) {
+                    return newPrevious;
+                } else {
+                    // record the thread movement and start over 
+                    previous = newPrevious;
+                    moved.add(newPrevious.getThread());
+                }
+            }
+            // make the previous snapshot the next one
+            first = next;
+        }
+    }
 }
-Listing 3: RSkipList: takeSnapShot
-while (true) { SkipListSnapshot <T> next =
-if (next.equals(first)) { // clean double -collect ,
-return
-lastSnapshot = next;
-return next; } else {
-// see if a new snapshot
-collect();
-so update snapshot and
-has been registered
-takeSnapshot() {
-previous = lastSnapshot; first = collect();
-SkipListSnapshot <T> newPrevious = lastSnapshot; if (previous != newPrevious) {
-if (moved.contains(newPrevious.getThread())) { // this thread had moved before, so we can use
-this snapshot
-return newPrevious;
-} else {
-// record the thread movement and start over previous = newPrevious; moved.add(newPrevious.getThread());
-} }
-// make the previous snapshot the next one
-first = next; }
 ```
-## R2SkipList 
 
-R2SkipList also uses the collect method. If we perform two collects one after another and the snapshots match then we know that there was an interval where no threads updated the skiplist. So this is a clean double collect and we return the snapshot taken by this thread. We also maintain a copy of this snapshot in an array of SkipListSnapShot objects indexed the the thread ID.
-In this case if we are not able to clean double collect then we call the method getMovedThreads() that detects moved threads between two snapshots. In this case the update methods (add
-or remove) don’t only increment the stamp but also use it to store the ID of the modifying thread. So we compare these stamps to figure out which thread made the change. If the snapshot taken by this thread is present in the the threadSnapShots then we return the snapshot.
-
-```Java 
-private SkipListSnapshot <T>[] threadSnapshots; public SkipListSnapshot <T> takeSnapshot() {
- SkipListSnapshot <T> first = HashSet <Integer > moved = new
-while (true) { SkipListSnapshot <T> next =
-collect(); HashSet <>();
-collect();
-if (next.equals(first)) {
-// clean double -collect , so update snapshot and return threadSnapshots[getThreadId()] = next;
-return next;
-} else {
-// see if a new snapshot has been registered ArrayList<Integer> movedIds = getMovedThreads(first,
-next);
-for (Integer id : movedIds) { if (moved.contains(id)) {
-if (threadSnapshots[id] != null) { return threadSnapshots[id];
-}
-} else {
- Page 6 of 17
-R2SkipList
-Range Queries in a Non-Blocking Skip-List
-PROJECT DESCRIPTION (continued)
-moved.add(id); }
-}
-// make the previous snapshot the next one
-first = next; }
-} }
-
-
-```
